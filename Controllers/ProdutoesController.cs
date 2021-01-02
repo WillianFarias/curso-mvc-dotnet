@@ -9,22 +9,23 @@ using CursoMVC.Models;
 
 namespace CursoMVC.Controllers
 {
-    public class ProdutosController : Controller
+    public class ProdutoesController : Controller
     {
         private readonly Context _context;
 
-        public ProdutosController(Context context)
+        public ProdutoesController(Context context)
         {
             _context = context;
         }
 
-        // GET: Produtos
+        // GET: Produtoes
         public async Task<IActionResult> Index()
         {
-            return View(await _context.Produtos.ToListAsync());
+            var context = _context.Produtos.Include(p => p.categoria);
+            return View(await context.ToListAsync());
         }
 
-        // GET: Produtos/Details/5
+        // GET: Produtoes/Details/5
         public async Task<IActionResult> Details(int? id)
         {
             if (id == null)
@@ -33,6 +34,7 @@ namespace CursoMVC.Controllers
             }
 
             var produto = await _context.Produtos
+                .Include(p => p.categoria)
                 .FirstOrDefaultAsync(m => m.Id == id);
             if (produto == null)
             {
@@ -42,18 +44,19 @@ namespace CursoMVC.Controllers
             return View(produto);
         }
 
-        // GET: Produtos/Create
+        // GET: Produtoes/Create
         public IActionResult Create()
         {
+            ViewData["CategoriaId"] = new SelectList(_context.Categorias, "Id", "Id");
             return View();
         }
 
-        // POST: Produtos/Create
+        // POST: Produtoes/Create
         // To protect from overposting attacks, enable the specific properties you want to bind to.
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Id,Descricao")] Produto produto)
+        public async Task<IActionResult> Create([Bind("Id,Descricao,Quantidade,CategoriaId")] Produto produto)
         {
             if (ModelState.IsValid)
             {
@@ -61,10 +64,11 @@ namespace CursoMVC.Controllers
                 await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
             }
+            ViewData["CategoriaId"] = new SelectList(_context.Categorias, "Id", "Id", produto.CategoriaId);
             return View(produto);
         }
 
-        // GET: Produtos/Edit/5
+        // GET: Produtoes/Edit/5
         public async Task<IActionResult> Edit(int? id)
         {
             if (id == null)
@@ -77,15 +81,16 @@ namespace CursoMVC.Controllers
             {
                 return NotFound();
             }
+            ViewData["CategoriaId"] = new SelectList(_context.Categorias, "Id", "Id", produto.CategoriaId);
             return View(produto);
         }
 
-        // POST: Produtos/Edit/5
+        // POST: Produtoes/Edit/5
         // To protect from overposting attacks, enable the specific properties you want to bind to.
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("Id,Descricao")] Produto produto)
+        public async Task<IActionResult> Edit(int id, [Bind("Id,Descricao,Quantidade,CategoriaId")] Produto produto)
         {
             if (id != produto.Id)
             {
@@ -112,10 +117,11 @@ namespace CursoMVC.Controllers
                 }
                 return RedirectToAction(nameof(Index));
             }
+            ViewData["CategoriaId"] = new SelectList(_context.Categorias, "Id", "Id", produto.CategoriaId);
             return View(produto);
         }
 
-        // GET: Produtos/Delete/5
+        // GET: Produtoes/Delete/5
         public async Task<IActionResult> Delete(int? id)
         {
             if (id == null)
@@ -124,6 +130,7 @@ namespace CursoMVC.Controllers
             }
 
             var produto = await _context.Produtos
+                .Include(p => p.categoria)
                 .FirstOrDefaultAsync(m => m.Id == id);
             if (produto == null)
             {
@@ -133,7 +140,7 @@ namespace CursoMVC.Controllers
             return View(produto);
         }
 
-        // POST: Produtos/Delete/5
+        // POST: Produtoes/Delete/5
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
